@@ -27,34 +27,33 @@ template< unsigned Integer, unsigned Fraction >
 class UFixed : FIXED_POINTS_DETAILS::UFixedBase< Integer, Fraction >
 {
 public:
-	static_assert((Integer + Fraction) <= FIXED_POINTS_DETAILS::BitSize<uintmax_t>::Value, "Platform does not have a native type large enough for UFixed.");
-
-public:
-	using IntegerType = FIXED_POINTS_DETAILS::LeastUInt<Integer>;
-	using FractionType = FIXED_POINTS_DETAILS::LeastUInt<Fraction>;
-	using InternalType = FIXED_POINTS_DETAILS::LeastUInt<Integer + Fraction>;
-	
-	using ShiftType = FIXED_POINTS_DETAILS::LeastUInt<Integer + Fraction>;
-	using MaskType = FIXED_POINTS_DETAILS::LeastUInt<Integer + Fraction>;
-
 	constexpr const static uintmax_t IntegerSize = Integer;
 	constexpr const static uintmax_t FractionSize = Fraction;
 	constexpr const static uintmax_t LogicalSize = IntegerSize + FractionSize;
+
+public:
+	static_assert(LogicalSize <= FIXED_POINTS_DETAILS::BitSize<uintmax_t>::Value, "Platform does not have a native type large enough for UFixed.");
+	
+public:
+	using IntegerType = FIXED_POINTS_DETAILS::LeastUInt<IntegerSize>;
+	using FractionType = FIXED_POINTS_DETAILS::LeastUInt<FractionSize>;
+	using InternalType = FIXED_POINTS_DETAILS::LeastUInt<LogicalSize>;
+	
 	constexpr const static uintmax_t InternalSize = FIXED_POINTS_DETAILS::BitSize<InternalType>::Value;
 	
 	constexpr const static uintmax_t Scale = 1ULL << FractionSize;
 	
-public:
+public:	
+	using ShiftType = FIXED_POINTS_DETAILS::LeastUInt<LogicalSize>;
+	
 	constexpr const static ShiftType IntegerShift = FractionSize;
 	constexpr const static ShiftType FractionShift = 0;
 	
+	using MaskType = FIXED_POINTS_DETAILS::LeastUInt<LogicalSize>;
+		
 	constexpr const static MaskType IntegerMask = FIXED_POINTS_DETAILS::IdentityMask<IntegerSize>::Value;
-	constexpr const static MaskType FractionMask = FIXED_POINTS_DETAILS::IdentityMask<FractionSize>::Value;
-	
-	constexpr const static MaskType IdentityMask = (IntegerMask << IntegerShift) | (FractionMask << FractionShift);
-	
-	constexpr const static MaskType MidpointMask = FIXED_POINTS_DETAILS::MsbMask<FractionSize>::Value;
-	constexpr const static MaskType LesserMidpointMask = MidpointMask - 1;
+	constexpr const static MaskType FractionMask = FIXED_POINTS_DETAILS::IdentityMask<FractionSize>::Value;	
+	constexpr const static MaskType IdentityMask = FIXED_POINTS_DETAILS::IdentityMask<LogicalSize>::Value;
 
 private:
 	using Base = FIXED_POINTS_DETAILS::UFixedBase<Integer, Fraction>;
